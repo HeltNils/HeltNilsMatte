@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hva er klokka?</title>
+
+<style>
+
+:root{
+--cell:38px;
+--grid-line:rgba(0,0,0,0.12);
+--paper:#f7f5ef;
+--ink:#111;
+--blue:#9fb3ea;
+}
+
+*{box-sizing:border-box;}
+
+body{
+margin:0;
+background:#dddddf;
+font-family:"Comic Sans MS","Trebuchet MS",sans-serif;
+display:flex;
+justify-content:center;
+padding:18px;
+}
+
+.page{
+position:relative;
+width:1026px;
+min-height:1300px;
+background-color:var(--paper);
+
+background-image:
+linear-gradient(to right,var(--grid-line) 1px,transparent 1px),
+linear-gradient(to bottom,var(--grid-line) 1px,transparent 1px);
+
+background-size:var(--cell) var(--cell);
+overflow:hidden;
+}
+
+.clock-wrap{
+position:absolute;
+top:160px;
+left:50%;
+transform:translateX(-50%);
+width:560px;
+height:560px;
+border:3px solid #111;
+border-radius:50%;
+background:#f8f8f8;
+touch-action:none;
+}
+
+.clock-wrap::before{
+content:"";
+position:absolute;
+inset:8px;
+border:2px dotted rgba(0,0,0,.35);
+border-radius:50%;
+}
+
+.center-dot{
+position:absolute;
+width:26px;
+height:26px;
+background:#111;
+border-radius:50%;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+z-index:4;
+}
+
+.number{
+position:absolute;
+left:50%;
+top:50%;
+width:52px;
+height:52px;
+margin-left:-26px;
+margin-top:-26px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:2rem;
+}
+
+.hand{
+position:absolute;
+left:50%;
+top:50%;
+transform-origin:bottom center;
+z-index:3;
+cursor:grab;
+}
+
+.hand.minute{
+width:5px;
+height:220px;
+margin-left:-2.5px;
+margin-top:-220px;
+background:#111;
+}
+
+.hand.hour{
+width:7px;
+height:165px;
+margin-left:-3.5px;
+margin-top:-165px;
+background:#111;
+}
+
+.question-box{
+position:absolute;
+left:90px;
+right:90px;
+top:780px;
+text-align:center;
+}
+
+.question-pill{
+display:inline-block;
+background:var(--blue);
+border-radius:14px;
+padding:6px 18px;
+font-size:2rem;
+margin-bottom:24px;
+}
+
+.answer-row{
+font-size:2rem;
+margin-bottom:28px;
+}
+
+.answer-row input{
+width:180px;
+border:none;
+border-bottom:3px solid #111;
+background:transparent;
+font:inherit;
+text-align:center;
+outline:none;
+}
+
+.mode-row{
+margin-bottom:20px;
+font-size:1.4rem;
+}
+
+.mode-row select{
+font:inherit;
+font-size:1.1rem;
+border-radius:10px;
+border:2px solid #111;
+padding:6px 10px;
+background:white;
+}
+
+.buttons{
+display:flex;
+justify-content:center;
+gap:18px;
+flex-wrap:wrap;
+}
+
+button{
+border:none;
+border-radius:16px;
+padding:14px 24px;
+font:inherit;
+font-size:1.2rem;
+cursor:pointer;
+background:#111;
+color:white;
+}
+
+.new-btn{
+background:#cda0ef;
+color:#111;
+}
+
+.check-btn{
+background:#9fd6aa;
+color:#111;
+}
+
+.message{
+margin-top:22px;
+font-size:1.6rem;
+min-height:40px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="page">
+
+<div class="clock-wrap" id="clock">
+
+<div class="hand hour" id="hourHand"></div>
+<div class="hand minute" id="minuteHand"></div>
+<div class="center-dot"></div>
+
+</div>
+
+<div class="question-box">
+
+<div class="question-pill">
+Hva er klokka nå?
+</div>
+
+<div class="answer-row">
+svar:
+<input id="answerInput" type="text" placeholder="f.eks. 07:30">
+</div>
+
+<div class="mode-row">
+Vanskelighet:
+<select id="modeSelect">
+<option value="quarter">Kvarter (00,15,30,45)</option>
+<option value="all">Alle minutter</option>
+</select>
+</div>
+
+<div class="buttons">
+
+<button class="check-btn" id="checkBtn">
+Sjekk svar
+</button>
+
+<button class="new-btn" id="newTaskBtn">
+Ny oppgave
+</button>
+
+</div>
+
+<div class="message" id="message"></div>
+
+</div>
+
+</div>
+
+<script>
+
+const clock=document.getElementById("clock");
+const hourHand=document.getElementById("hourHand");
+const minuteHand=document.getElementById("minuteHand");
+
+const answerInput=document.getElementById("answerInput");
+const message=document.getElementById("message");
+
+const checkBtn=document.getElementById("checkBtn");
+const newTaskBtn=document.getElementById("newTaskBtn");
+const modeSelect=document.getElementById("modeSelect");
+
+const radius=235;
+
+let currentHour=12;
+let currentMinute=0;
+let draggingHand=null;
+
+function lagTall(){
+
+for(let i=1;i<=12;i++){
+
+const div=document.createElement("div");
+div.className="number";
+div.textContent=i;
+
+const angle=(i*30-90)*Math.PI/180;
+
+const x=Math.cos(angle)*radius;
+const y=Math.sin(angle)*radius;
+
+div.style.left=`calc(50% + ${x}px)`;
+div.style.top=`calc(50% + ${y}px)`;
+
+clock.appendChild(div);
+
+}
+
+}
+
+function visTid(hour,minute){
+
+currentHour=hour;
+currentMinute=minute;
+
+const minuteDeg=minute*6;
+const hourDeg=(hour%12)*30+minute*0.5;
+
+minuteHand.style.transform=`rotate(${minuteDeg}deg)`;
+hourHand.style.transform=`rotate(${hourDeg}deg)`;
+
+}
+
+function pad(n){
+return String(n).padStart(2,"0");
+}
+
+function riktigSvar(){
+return `${pad(currentHour)}:${pad(currentMinute)}`;
+}
+
+function nyOppgave(){
+
+let minute;
+
+if(modeSelect.value==="quarter"){
+
+const list=[0,15,30,45];
+minute=list[Math.floor(Math.random()*4)];
+
+}else{
+
+minute=Math.floor(Math.random()*60);
+
+}
+
+const hour=Math.floor(Math.random()*12)+1;
+
+visTid(hour,minute);
+
+answerInput.value="";
+message.textContent="";
+
+}
+
+function sjekkSvar(){
+
+const svar=answerInput.value.trim();
+
+if(!svar){
+message.textContent="Skriv et svar først.";
+return;
+}
+
+if(svar===riktigSvar()){
+message.textContent="Riktig! 🎉";
+}else{
+message.textContent="Riktig svar er "+riktigSvar();
+}
+
+}
+
+function vinkelFraMus(e){
+
+const rect=clock.getBoundingClientRect();
+
+const cx=rect.left+rect.width/2;
+const cy=rect.top+rect.height/2;
+
+const dx=e.clientX-cx;
+const dy=e.clientY-cy;
+
+let deg=Math.atan2(dy,dx)*180/Math.PI+90;
+
+if(deg<0)deg+=360;
+
+return deg;
+
+}
+
+function startDrag(hand){
+
+draggingHand=hand;
+
+}
+
+function stoppDrag(){
+
+draggingHand=null;
+
+}
+
+function moveDrag(e){
+
+if(!draggingHand)return;
+
+const deg=vinkelFraMus(e);
+
+if(draggingHand===minuteHand){
+
+const minute=Math.round(deg/6)%60;
+currentMinute=Math.round(minute/5)*5%60;
+
+}
+
+if(draggingHand===hourHand){
+
+let hour=Math.round(deg/30)%12;
+if(hour===0)hour=12;
+
+currentHour=hour;
+
+}
+
+visTid(currentHour,currentMinute);
+
+}
+
+hourHand.addEventListener("pointerdown",()=>startDrag(hourHand));
+minuteHand.addEventListener("pointerdown",()=>startDrag(minuteHand));
+
+window.addEventListener("pointermove",moveDrag);
+window.addEventListener("pointerup",stoppDrag);
+
+checkBtn.onclick=sjekkSvar;
+newTaskBtn.onclick=nyOppgave;
+
+lagTall();
+nyOppgave();
+
+</script>
+
+</body>
+</html>
