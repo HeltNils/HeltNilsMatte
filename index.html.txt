@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Helt Nils</title>
+
+  <style>
+    :root {
+      --cell: 38px;
+      --grid-line: rgba(0, 0, 0, 0.14);
+      --paper: #f8f7f2;
+      --ink: #111;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #e9e9eb;
+      font-family: "Comic Sans MS", "Trebuchet MS", sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .page {
+      width: 1180px;
+      min-height: 920px;
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: var(--cell) var(--cell);
+      position: relative;
+      padding: 70px 70px 90px;
+      overflow: hidden;
+    }
+
+    .top-line {
+      position: absolute;
+      top: 30px;
+      left: 0;
+      right: 0;
+      border-top: 2px solid #111;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 40px;
+      gap: 60px;
+    }
+
+    .ruteord {
+      display: inline-grid;
+      grid-auto-flow: column;
+      grid-auto-columns: var(--cell);
+      align-items: center;
+      justify-items: center;
+      min-height: var(--cell);
+      padding: 0 16px;
+      border-radius: 18px;
+      color: var(--ink);
+      font-size: 2rem;
+      line-height: 1;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      background: transparent;
+    }
+
+    .ruteord span {
+      width: var(--cell);
+      height: var(--cell);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .title-pill {
+      background: #aebfe8;
+      margin-bottom: 20px;
+      cursor: default;
+    }
+
+    .level-btn {
+      transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .level-btn:hover {
+      transform: scale(1.06);
+      opacity: 0.96;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+    }
+
+    .level1 { background: #efe96c; }
+    .level2 { background: #d9eb85; }
+    .level3 { background: #f1a39d; }
+    .level4 { background: #d48be9; }
+
+    .flower {
+      position: absolute;
+      width: 82px;
+      height: 82px;
+    }
+
+    .flower-left {
+      top: 48px;
+      left: 46px;
+    }
+
+    .flower-right {
+      top: 48px;
+      right: 46px;
+    }
+
+    @media (max-width: 900px) {
+      :root {
+        --cell: 30px;
+      }
+
+      .page {
+        width: 100%;
+        min-height: 100vh;
+        padding: 60px 20px 70px;
+      }
+
+      .top-line {
+        top: 24px;
+      }
+
+      .menu {
+        gap: 40px;
+        margin-top: 30px;
+      }
+
+      .ruteord {
+        font-size: 1.6rem;
+        padding: 0 10px;
+      }
+
+      .flower {
+        width: 62px;
+        height: 62px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top-line"></div>
+
+    <svg class="flower flower-left" viewBox="0 0 100 100" aria-hidden="true">
+      <ellipse cx="22" cy="26" rx="10" ry="20" fill="#8fd39b" transform="rotate(-50 22 26)"></ellipse>
+      <ellipse cx="22" cy="58" rx="10" ry="20" fill="#8fd39b" transform="rotate(40 22 58)"></ellipse>
+      <circle cx="54" cy="42" r="13" fill="#f4c4b8"></circle>
+      <circle cx="42" cy="30" r="13" fill="#f7d0c7"></circle>
+      <circle cx="67" cy="30" r="13" fill="#f7d0c7"></circle>
+      <circle cx="42" cy="55" r="13" fill="#f7d0c7"></circle>
+      <circle cx="67" cy="55" r="13" fill="#f7d0c7"></circle>
+      <circle cx="54" cy="42" r="6" fill="#f2f0c6"></circle>
+    </svg>
+
+    <svg class="flower flower-right" viewBox="0 0 100 100" aria-hidden="true">
+      <ellipse cx="78" cy="26" rx="10" ry="20" fill="#8fd39b" transform="rotate(50 78 26)"></ellipse>
+      <ellipse cx="78" cy="58" rx="10" ry="20" fill="#8fd39b" transform="rotate(-40 78 58)"></ellipse>
+      <circle cx="46" cy="42" r="13" fill="#f4c4b8"></circle>
+      <circle cx="34" cy="30" r="13" fill="#f7d0c7"></circle>
+      <circle cx="59" cy="30" r="13" fill="#f7d0c7"></circle>
+      <circle cx="34" cy="55" r="13" fill="#f7d0c7"></circle>
+      <circle cx="59" cy="55" r="13" fill="#f7d0c7"></circle>
+      <circle cx="46" cy="42" r="6" fill="#f2f0c6"></circle>
+    </svg>
+
+    <div class="menu">
+      <div id="mainTitle" class="ruteord title-pill"></div>
+
+      <a class="ruteord level-btn level1" href="nivaa1.html" id="btn1"></a>
+      <a class="ruteord level-btn level2" href="nivaa2.html" id="btn2"></a>
+      <a class="ruteord level-btn level3" href="nivaa3.html" id="btn3"></a>
+      <a class="ruteord level-btn level4" href="regnerekkefolge.html" id="btn4"></a>
+    </div>
+  </div>
+
+  <script>
+    function settRuteord(id, tekst) {
+      const el = document.getElementById(id);
+      el.innerHTML = "";
+
+      for (const tegn of tekst) {
+        const span = document.createElement("span");
+        span.innerHTML = tegn === " " ? "&nbsp;" : tegn;
+        el.appendChild(span);
+      }
+    }
+
+    settRuteord("mainTitle", "Helt Nils lekser");
+    settRuteord("btn1", "1 Nivå 1");
+    settRuteord("btn2", "2 Nivå 2");
+    settRuteord("btn3", "3 Nivå 3");
+    settRuteord("btn4", "Regnerekkefølge");
+  </script>
+</body>
+</html>

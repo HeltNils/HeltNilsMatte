@@ -1,0 +1,382 @@
+
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Helt Nils lekser Nivå 1</title>
+  <style>
+    :root {
+      --cell: 35px;
+      --grid-line: rgba(0, 0, 0, 0.14);
+      --paper: #f8f7f2;
+      --ink: #111;
+      --line: #111;
+    }
+
+    body {
+      margin: 0;
+      background: #ececec;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      font-family: "Comic Sans MS", "Trebuchet MS", sans-serif;
+    }
+
+    .page {
+      width: 1180px;
+      min-height: 930px;
+      box-sizing: border-box;
+      padding: 56px 70px 60px;
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: var(--cell) var(--cell);
+      position: relative;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 54px;
+      flex-wrap: wrap;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 1rem;
+      cursor: pointer;
+      background: #333;
+      color: white;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .ruteord {
+      display: inline-grid;
+      grid-auto-flow: column;
+      grid-auto-columns: var(--cell);
+      align-items: center;
+      justify-items: center;
+      height: var(--cell);
+      padding: 0 12px;
+      border-radius: 18px;
+      font-size: 2rem;
+      line-height: 1;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .ruteord span {
+      width: var(--cell);
+      height: var(--cell);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .title-block {
+      background: #b8c9ef;
+      margin-bottom: 18px;
+    }
+
+    .symbols {
+      display: inline-grid;
+      grid-auto-flow: column;
+      grid-auto-columns: var(--cell);
+      align-items: center;
+      justify-items: center;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .symbols span {
+      width: var(--cell);
+      height: var(--cell);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 115px;
+      row-gap: 95px;
+      margin-top: 8px;
+    }
+
+    .section-title {
+      margin-bottom: 46px;
+    }
+
+    .green { background: #d7eb7d; }
+    .purple { background: #d48be9; }
+    .pink { background: #f2a29a; }
+    .yellow { background: #ece86b; }
+
+    .problem-wrap {
+      min-height: 140px;
+    }
+
+    .vertical-problem {
+      display: inline-grid;
+      grid-template-columns: repeat(3, var(--cell));
+      grid-template-rows:
+        var(--cell)
+        var(--cell)
+        var(--cell)
+        calc(var(--cell) * 0.6)
+        calc(var(--cell) * 0.6);
+      justify-items: center;
+      align-items: center;
+      color: var(--ink);
+      font-size: 2rem;
+      line-height: 1;
+      margin-left: calc(var(--cell) * 2);
+    }
+
+    .cell {
+      width: var(--cell);
+      height: var(--cell);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .math-line {
+      grid-column: 1 / span 3;
+      width: calc(var(--cell) * 2.05);
+      justify-self: start;
+      margin-left: calc(var(--cell) * 0.5);
+      border-top: 2px solid var(--line);
+      height: 0;
+      align-self: end;
+    }
+
+    .answer-line {
+      grid-column: 1 / span 3;
+      width: calc(var(--cell) * 2.05);
+      justify-self: start;
+      margin-left: calc(var(--cell) * 0.5);
+      border-top: 2px solid var(--line);
+      height: 0;
+    }
+
+    .horizontal-problem {
+      display: inline-grid;
+      grid-template-columns: repeat(11, var(--cell));
+      grid-template-rows: var(--cell) calc(var(--cell) * 0.6) calc(var(--cell) * 0.6);
+      align-items: center;
+      justify-items: center;
+      font-size: 2rem;
+      line-height: 1;
+      color: var(--ink);
+      margin-left: calc(var(--cell) * 1.2);
+    }
+
+    .h-answer-line {
+      border-top: 2px solid var(--line);
+      height: 0;
+      width: 100%;
+      align-self: center;
+    }
+
+    .footer {
+      margin-top: 65px;
+      font-size: 1rem;
+      color: #444;
+    }
+
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+
+      .controls {
+        display: none;
+      }
+
+      .page {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div>
+        <div id="mainTitle" class="ruteord title-block"></div>
+        <div id="symbolRow" class="symbols"></div>
+      </div>
+
+      <div class="controls">
+        <button onclick="lagOppgaver()">Lag nye oppgaver</button>
+        <button onclick="window.print()">Skriv ut</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="section">
+        <div id="titleAddisjon" class="ruteord section-title green"></div>
+        <div class="problem-wrap" id="addisjon"></div>
+      </div>
+
+      <div class="section">
+        <div id="titleSubtraksjon" class="ruteord section-title purple"></div>
+        <div class="problem-wrap" id="subtraksjon"></div>
+      </div>
+
+      <div class="section">
+        <div id="titleMultiplikasjon" class="ruteord section-title pink"></div>
+        <div class="problem-wrap" id="multiplikasjon"></div>
+      </div>
+
+      <div class="section">
+        <div id="titleDivisjon" class="ruteord section-title yellow"></div>
+        <div class="problem-wrap" id="divisjon"></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Navn: ____________________________ &nbsp;&nbsp;&nbsp; Dato: __________________
+    </div>
+  </div>
+
+  <script>
+    function tilfeldigTall(min, maks) {
+      return Math.floor(Math.random() * (maks - min + 1)) + min;
+    }
+
+    function settRuteord(id, tekst) {
+      const el = document.getElementById(id);
+      el.innerHTML = "";
+      for (const tegn of tekst) {
+        const span = document.createElement("span");
+        span.innerHTML = tegn === " " ? "&nbsp;" : tegn;
+        el.appendChild(span);
+      }
+    }
+
+    function toSifre(n) {
+      return String(n).padStart(2, " ");
+    }
+
+    function lagVertikalOppgave(tall1, operator, tall2) {
+      const a = toSifre(tall1).split("");
+      const b = toSifre(tall2).split("");
+
+      return `
+        <div class="vertical-problem">
+          <div class="cell"></div>
+          <div class="cell">${a[0] === " " ? "&nbsp;" : a[0]}</div>
+          <div class="cell">${a[1]}</div>
+
+          <div class="cell">${operator}</div>
+          <div class="cell">${b[0] === " " ? "&nbsp;" : b[0]}</div>
+          <div class="cell">${b[1]}</div>
+
+          <div class="math-line"></div>
+
+          <div class="cell">=</div>
+          <div class="cell"></div>
+          <div class="cell"></div>
+
+          <div class="answer-line"></div>
+          <div class="answer-line"></div>
+        </div>
+      `;
+    }
+
+    function lagHorisontalOppgave(tall1, operator, tall2, strekLengde = 3) {
+      const tegn = `${tall1}${operator}${tall2}=`.split("");
+      const cols = 11;
+      let html = `<div class="horizontal-problem">`;
+
+      for (let i = 0; i < cols; i++) {
+        const tegnIndex = i;
+        if (tegnIndex < tegn.length) {
+          html += `<div class="cell">${tegn[tegnIndex]}</div>`;
+        } else {
+          html += `<div class="cell"></div>`;
+        }
+      }
+
+      for (let i = 0; i < cols; i++) {
+        if (i >= tegn.length && i < tegn.length + strekLengde) {
+          html += `<div class="h-answer-line"></div>`;
+        } else {
+          html += `<div></div>`;
+        }
+      }
+
+      for (let i = 0; i < cols; i++) {
+        if (i >= tegn.length && i < tegn.length + strekLengde) {
+          html += `<div class="h-answer-line"></div>`;
+        } else {
+          html += `<div></div>`;
+        }
+      }
+
+      html += `</div>`;
+      return html;
+    }
+
+    function lagAddisjon() {
+      const a = tilfeldigTall(10, 99);
+      const b = tilfeldigTall(10, 99);
+      document.getElementById("addisjon").innerHTML = lagVertikalOppgave(a, "+", b);
+    }
+
+    function lagSubtraksjon() {
+      const a = tilfeldigTall(20, 99);
+      const b = tilfeldigTall(10, a);
+      document.getElementById("subtraksjon").innerHTML = lagVertikalOppgave(a, "-", b);
+    }
+
+    function lagMultiplikasjon() {
+      const a = tilfeldigTall(10, 99);
+      const b = tilfeldigTall(10, 99);
+      document.getElementById("multiplikasjon").innerHTML = lagHorisontalOppgave(a, "·", b, 3);
+    }
+
+    function lagDivisjon() {
+      const divisor = tilfeldigTall(2, 9);
+      const svar = tilfeldigTall(10, 99);
+      const dividend = divisor * svar;
+      document.getElementById("divisjon").innerHTML = lagHorisontalOppgave(dividend, ":", divisor, 3);
+    }
+
+    function lagOppgaver() {
+      lagAddisjon();
+      lagSubtraksjon();
+      lagMultiplikasjon();
+      lagDivisjon();
+    }
+
+    settRuteord("mainTitle", "Helt Nils lekser Nivå 1");
+    settRuteord("titleAddisjon", "Addisjon");
+    settRuteord("titleSubtraksjon", "Subtraksjon");
+    settRuteord("titleMultiplikasjon", "Multiplikasjon");
+    settRuteord("titleDivisjon", "Divisjon");
+    settRuteord("symbolRow", "123456789+-·:=");
+
+    lagOppgaver();
+  </script>
+</body>
+</html>
