@@ -141,6 +141,37 @@
       z-index: 1;
     }
 
+    .clock-link {
+      position: absolute;
+      right: 120px;
+      top: 255px;
+      width: 92px;
+      height: 92px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      z-index: 3;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    .clock-link:hover {
+      transform: scale(1.08);
+      opacity: 0.95;
+    }
+
+    .clock-link svg {
+      width: 92px;
+      height: 92px;
+      overflow: visible;
+    }
+
+    .clock-link:focus-visible {
+      outline: 2px dashed #111;
+      outline-offset: 6px;
+      border-radius: 50%;
+    }
+
     /* Helt usynlig knapp i nederste venstre rute */
     .secret-mattemani {
       position: absolute;
@@ -207,6 +238,19 @@
         width: 150px;
         height: 170px;
       }
+
+      .clock-link {
+        position: static;
+        display: flex;
+        margin: 10px auto 20px;
+        width: 76px;
+        height: 76px;
+      }
+
+      .clock-link svg {
+        width: 76px;
+        height: 76px;
+      }
     }
   </style>
 </head>
@@ -238,6 +282,16 @@
 
     <!-- Bytt filnavn under til bildet ditt -->
     <img class="portrait" src="gammel-mann.png" alt="Portrett" />
+
+    <!-- Klokkeknapp -->
+    <a class="clock-link" href="hva-er-klokka.html" aria-label="Åpne klokkeøving">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="39" fill="none" stroke="#111" stroke-width="4"></circle>
+        <circle cx="50" cy="50" r="2.8" fill="#111"></circle>
+        <line x1="50" y1="50" x2="50" y2="26" stroke="#111" stroke-width="4" stroke-linecap="round"></line>
+        <line x1="50" y1="50" x2="63" y2="64" stroke="#111" stroke-width="4" stroke-linecap="round"></line>
+      </svg>
+    </a>
 
     <div class="menu">
       <div id="mainTitle" class="ruteord title-pill"></div>
