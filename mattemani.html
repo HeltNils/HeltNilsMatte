@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mattemani</title>
+  <style>
+    :root{
+      --cell: 38px;
+      --grid-line: rgba(0,0,0,0.12);
+      --paper: #f7f5ef;
+      --ink: #161616;
+      --red: #f04b3b;
+      --green: #178648;
+      --pink: #efa0a0;
+      --bluebox: rgba(120, 150, 230, 0.55);
+      --purple: rgba(205, 130, 225, 0.75);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+
+    body{
+      margin:0;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      background:#dddddf;
+      font-family: "Comic Sans MS", "Trebuchet MS", system-ui, sans-serif;
+      padding: 18px;
+      user-select: none;
+    }
+
+    .page{
+      position:relative;
+      width: 1026px;
+      height: 1450px;
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: var(--cell) var(--cell);
+      overflow:hidden;
+      border-radius: 4px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+
+    .edge-line{
+      position:absolute;
+      left:0; right:0;
+      height: 2px;
+      background:#222;
+      opacity:0.9;
+    }
+    .edge-top{ top: calc(var(--cell) * 1); }
+    .edge-bottom{ bottom: calc(var(--cell) * 1); }
+
+    .flower{
+      position:absolute;
+      width:70px;
+      height:70px;
+      opacity:0.9;
+      pointer-events:none;
+    }
+    .flower.tl{ left:22px; top:18px; }
+    .flower.tr{ right:22px; top:18px; transform:scaleX(-1); }
+    .flower.bl{ left:22px; bottom:18px; }
+    .flower.br{ right:22px; bottom:18px; transform:scaleX(-1); }
+
+    .title-wrap{
+      position:absolute;
+      left:50%;
+      top: 30px;
+      transform: translateX(-50%);
+      width: 320px;
+      height: 150px;
+      pointer-events:none;
+    }
+    .title-bg{
+      position:absolute;
+      inset:0;
+      background: var(--pink);
+      clip-path: polygon(5% 25%, 12% 12%, 24% 20%, 31% 4%, 43% 18%, 54% 0%, 63% 13%, 76% 5%, 88% 17%, 96% 11%, 97% 78%, 86% 87%, 74% 79%, 64% 96%, 48% 83%, 35% 97%, 23% 82%, 11% 90%, 4% 72%);
+      opacity:0.9;
+    }
+    .title{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 4.2rem;
+      color:#111;
+      font-family: "Comic Sans MS", "Trebuchet MS", cursive, sans-serif;
+      transform: rotate(-2deg);
+    }
+    .title::after,
+    .title::before{
+      content:"";
+      position:absolute;
+      left: 26px;
+      right: 28px;
+      height: 4px;
+      background:#111;
+      bottom: 30px;
+      transform: rotate(1deg);
+    }
+    .title::after{
+      bottom: 22px;
+      left: 34px;
+      right: 22px;
+      transform: rotate(-3deg);
+    }
+
+    .rules{
+      position:absolute;
+      left: calc(var(--cell) * 1);
+      top: calc(var(--cell) * 5);
+      width: calc(var(--cell) * 5.9);
+      min-height: calc(var(--cell) * 8.8);
+      background: var(--bluebox);
+      border-radius: 18px;
+      padding: 24px 22px;
+      color: var(--red);
+      font-size: 1.15rem;
+      line-height: 1.55;
+      z-index: 2;
+    }
+
+    .score-box{
+      position:absolute;
+      left: calc(var(--cell) * 1);
+      top: calc(var(--cell) * 15.2);
+      background: var(--purple);
+      border-radius: 16px;
+      padding: 8px 22px;
+      font-size: 1.9rem;
+      color:#111;
+      z-index: 2;
+      min-width: 250px;
+    }
+
+    .help{
+      position:absolute;
+      right: calc(var(--cell) * 1.1);
+      top: calc(var(--cell) * 3.1);
+      font-size: 1rem;
+      color:#444;
+      background: rgba(255,255,255,0.55);
+      padding: 8px 12px;
+      border-radius: 12px;
+      z-index: 2;
+    }
+
+    #playfield{
+      position:absolute;
+      inset:0;
+      z-index:1;
+    }
+
+    .entity{
+      position:absolute;
+      width: calc(var(--cell) * 1.35);
+      height: calc(var(--cell) * 1.35);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      transform: translate(-50%, -50%);
+      line-height: 1;
+      font-weight: 500;
+      color:#111;
+      padding:4px;
+      pointer-events:none;
+      font-family: "Comic Sans MS", "Trebuchet MS", cursive, sans-serif;
+    }
+
+    .entity .label{
+      position:relative;
+      z-index:2;
+      max-width:100%;
+      max-height:100%;
+      overflow:visible;
+      font-size: 1.25rem;
+      white-space:nowrap;
+    }
+
+    .food .ring,
+    .player .ring{
+      position:absolute;
+      inset:-5px;
+      border-radius:999px;
+    }
+
+    .food .ring{
+      border: 3px solid var(--red);
+    }
+
+    .player{
+      color: var(--green);
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .player .ring{
+      border: 3px solid var(--green);
+    }
+
+    .hunter{
+      color: #7b36d6;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .hunter .ring{
+      border: 4px solid #7b36d6;
+    }
+
+    .tiny .label{ font-size: 0.95rem; }
+    .small .label{ font-size: 1.05rem; }
+    .big .label{ font-size: 1.4rem; }
+    .wider{ width: calc(var(--cell) * 2.2); }
+    .widest{ width: calc(var(--cell) * 2.9); }
+
+    .fraction{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      font-size: 1rem;
+      transform: scale(0.95);
+    }
+    .fraction .bar{
+      width: 1.25em;
+      border-top: 2px solid currentColor;
+      margin: 2px 0 1px;
+    }
+
+    .game-over{
+      position:absolute;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background: rgba(245, 240, 235, 0.78);
+      z-index:4;
+      flex-direction:column;
+      text-align:center;
+      padding: 20px;
+    }
+    .game-over.show{ display:flex; }
+
+    .game-over h1{
+      margin:0 0 12px;
+      font-size: 5rem;
+      line-height: 0.95;
+      color:#121212;
+      transform: rotate(-4deg);
+    }
+    .game-over p{
+      margin:0 0 18px;
+      font-size:1.6rem;
+      color:#333;
+    }
+    .restart-btn{
+      border:none;
+      background:#111;
+      color:white;
+      font: inherit;
+      font-size:1.15rem;
+      padding: 12px 18px;
+      border-radius: 12px;
+      cursor:pointer;
+    }
+
+    .footer-tip{
+      position:absolute;
+      right: calc(var(--cell) * 1.2);
+      bottom: calc(var(--cell) * 1.5);
+      color:#666;
+      font-size:0.95rem;
+      background: rgba(255,255,255,0.55);
+      padding: 8px 11px;
+      border-radius: 12px;
+      z-index:2;
+    }
+
+    .touch-controls{
+      position:absolute;
+      right: calc(var(--cell) * 1.1);
+      bottom: calc(var(--cell) * 3.2);
+      width: 170px;
+      height: 170px;
+      z-index:3;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 8px;
+      touch-action: manipulation;
+    }
+
+    .touch-btn{
+      border:none;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.82);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      font: inherit;
+      font-size: 1.8rem;
+      color:#222;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      -webkit-user-select:none;
+      touch-action: manipulation;
+    }
+
+    .touch-btn:active{
+      transform: scale(0.96);
+      background: rgba(245,245,245,0.95);
+    }
+
+    .touch-empty{
+      pointer-events:none;
+    }
+
+    @media (hover: hover) and (pointer: fine){
+      .touch-controls{
+        opacity: 0.92;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page" id="page">
+    <div class="edge-line edge-top"></div>
+    <div class="edge-line edge-bottom"></div>
+
+    <svg class="flower tl" viewBox="0 0 100 100" aria-hidden="true">
+      <ellipse cx="22" cy="26" rx="10" ry="20" fill="#8fd39b" transform="rotate(-50 22 26)"></ellipse>
+      <ellipse cx="22" cy="58" rx="10" ry="20" fill="#8fd39b" transform="rotate(40 22 58)"></ellipse>
+      <circle cx="54" cy="42" r="13" fill="#f4c4b8"></circle>
+      <circle cx="42" cy="30" r="13" fill="#f7d0c7"></circle>
+      <circle cx="67" cy="30" r="13" fill="#f7d0c7"></circle>
+      <circle cx="42" cy="55" r="13" fill="#f7d0c7"></circle>
+      <circle cx="67" cy="55" r="13" fill="#f7d0c7"></circle>
+      <circle cx="54" cy="42" r="6" fill="#f2f0c6"></circle>
+    </svg>
+    <svg class="flower tr" viewBox="0 0 100 100" aria-hidden="true">
+      <ellipse cx="22" cy="26" rx="10" ry="20" fill="#8fd39b" transform="rotate(-50 22 26)"></ellipse>
+      <ellipse cx="22" cy="58" rx="10" ry="20" fill="#8fd39b" transform="rotate(40 22 58)"></ellipse>
+      <circle cx="54" cy="42" r="13" fill="#f4c4b8"></circle>
+      <circle cx="42" cy="30" r="13" fill="#f7d0c7"></circle>
+      <circle cx="67" cy="30" r="13" fill="#f7d0c7"></circle>
+      <circle cx="42" cy="55" r="13" fill="#f7d0c7"></circle>
+      <circle cx="67" cy="55" r="13" fill="#f7d0c7"></circle>
+      <circle cx="54" cy="42" r="6" fill="#f2f0c6"></circle>
+    </svg>
+    <svg class="flower bl" viewBox="0 0 100 100" aria-hidden="true">
+      <ellipse cx="22" cy="26" rx="10" ry="20" fill="#8fd39b" transform="rotate(-50 22 26)"></ellipse>
+      <ellipse cx="22" cy="58" rx="10" ry="20" fill="#8fd39b" transform="rotate(40 22 58)"></ellipse>
+      <circle cx="54" cy="42" r="13" fill="#f4c4b8"></circle>
+      <circle cx="42" cy="30" r="13" fill="#f7d0c7"></circle>
+      <circle cx="67" cy="30" r="13" fill="#f7d0c7"></circle>
+      <circle cx="42" cy="55" r="13" fill="#f7d0c7"></circle>
+      <circle cx="67" cy="55" r="13" fill="#f7d0c7"></circle>
+      <circle cx="54" cy="42" r="6" fill="#f2f0c6"></circle>
+    </svg>
+    <svg class="flower br" viewBox="0 0 100 100" aria-hidden="true">
+      <ellipse cx="22" cy="26" rx="10" ry="20" fill="#8fd39b" transform="rotate(-50 22 26)"></ellipse>
+      <ellipse cx="22" cy="58" rx="10" ry="20" fill="#8fd39b" transform="rotate(40 22 58)"></ellipse>
+      <circle cx="54" cy="42" r="13" fill="#f4c4b8"></circle>
+      <circle cx="42" cy="30" r="13" fill="#f7d0c7"></circle>
+      <circle cx="67" cy="30" r="13" fill="#f7d0c7"></circle>
+      <circle cx="42" cy="55" r="13" fill="#f7d0c7"></circle>
+      <circle cx="67" cy="55" r="13" fill="#f7d0c7"></circle>
+      <circle cx="54" cy="42" r="6" fill="#f2f0c6"></circle>
+    </svg>
+
+    <div class="title-wrap">
+      <div class="title-bg"></div>
+      <div class="title">MatteMani</div>
+    </div>
+
+    <div class="rules">
+      Spis tallene som er mindre enn deg for å vokse.<br><br>
+      Unngå tallene som er større enn eller like store som deg.<br><br>
+      Når du spiser et tall, får du poeng lik verdien du spiste, og ditt tall blir større med samme verdi.
+    </div>
+
+    <div class="score-box">
+      Score: <span id="score">0</span> &nbsp;|&nbsp; Deg: <span id="size">5</span>
+    </div>
+
+    <div class="help">Bruk piltastene eller knappene på skjermen for å flytte deg.</div>
+    <div class="footer-tip">Det kan maks være 20 røde tall samtidig. Pass også på det lilla jakt-tallet.</div>
+
+    <div id="playfield"></div>
+
+    <div class="touch-controls" aria-label="Touch-kontroller">
+      <div class="touch-empty"></div>
+      <button class="touch-btn" data-move="up" aria-label="Opp">▲</button>
+      <div class="touch-empty"></div>
+
+      <button class="touch-btn" data-move="left" aria-label="Venstre">◀</button>
+      <div class="touch-empty"></div>
+      <button class="touch-btn" data-move="right" aria-label="Høyre">▶</button>
+
+      <div class="touch-empty"></div>
+      <button class="touch-btn" data-move="down" aria-label="Ned">▼</button>
+      <div class="touch-empty"></div>
+    </div>
+
+    <div class="game-over" id="gameOver">
+      <h1>DEATH BY MATH</h1>
+      <p>Du krasjet i et for stort tall.</p>
+      <button class="restart-btn" id="restartBtn">Spill igjen</button>
+    </div>
+  </div>
+
+  <script>
+    const CELL = 38;
+    const page = document.getElementById("page");
+    const playfield = document.getElementById("playfield");
+    const scoreEl = document.getElementById("score");
+    const sizeEl = document.getElementById("size");
+    const gameOverEl = document.getElementById("gameOver");
+    const restartBtn = document.getElementById("restartBtn");
+
+    const state = {
+      score: 0,
+      playerValue: 5,
+      player: { x: 13, y: 21 },
+      foods: [],
+      dead: false,
+      spawnTimer: null,
+      hunter: null,
+      hunterTimer: null
+    };
+
+    const blocked = [
+      { x: 1, y: 5, w: 6, h: 9.7 },
+      { x: 1, y: 15, w: 6.4, h: 2 },
+      { x: 5.6, y: 0.35, w: 8.2, h: 4.2 }
+    ];
+
+    const bounds = {
+      minX: 1,
+      minY: 2,
+      maxX: 25,
+      maxY: 35
+    };
+
+    const MAX_FOODS = 20;
+
+    function collidesWithBlocked(cellX, cellY, padding = 0.65) {
+      const px = cellX;
+      const py = cellY;
+      return blocked.some(b => (
+        px + padding > b.x &&
+        px - padding < b.x + b.w &&
+        py + padding > b.y &&
+        py - padding < b.y + b.h
+      ));
+    }
+
+    function outOfBounds(cellX, cellY) {
+      return cellX < bounds.minX || cellX > bounds.maxX || cellY < bounds.minY || cellY > bounds.maxY;
+    }
+
+    function occupiedByOther(cellX, cellY) {
+      if (Math.abs(state.player.x - cellX) < 0.9 && Math.abs(state.player.y - cellY) < 0.9) return true;
+      if (state.hunter && Math.abs(state.hunter.x - cellX) < 1.1 && Math.abs(state.hunter.y - cellY) < 1.1) return true;
+      return state.foods.some(f => Math.abs(f.x - cellX) < 1.2 && Math.abs(f.y - cellY) < 1.2);
+    }
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function randomFreeSpot() {
+      for (let i = 0; i < 500; i++) {
+        const x = randInt(bounds.minX, bounds.maxX);
+        const y = randInt(bounds.minY, bounds.maxY);
+        if (!collidesWithBlocked(x, y) && !occupiedByOther(x, y)) {
+          return { x, y };
+        }
+      }
+      return { x: 20, y: 20 };
+    }
+
+    function makeFraction(num, den) {
+      return `<div class="fraction"><div>${num}</div><div class="bar"></div><div>${den}</div></div>`;
+    }
+
+    function makeLabelForValue(value) {
+      const forms = [];
+
+      forms.push({
+        html: `${value}`,
+        className: value >= 10 ? "small" : "big"
+      });
+
+      if (value >= 2) {
+        const a = randInt(1, value - 1);
+        const b = value - a;
+        forms.push({
+          html: `(${a} + ${b})`,
+          className: "small wider"
+        });
+      }
+
+      if (value <= 8) {
+        const a = value + randInt(1, 8);
+        const b = a - value;
+        forms.push({
+          html: `(${a} - ${b})`,
+          className: "small wider"
+        });
+      }
+
+      const factorPairs = [];
+      for (let i = 2; i <= value; i++) {
+        if (value % i === 0) factorPairs.push([i, value / i]);
+      }
+      if (factorPairs.length) {
+        const pair = factorPairs[randInt(0, factorPairs.length - 1)];
+        const a = pair[0];
+        const b = pair[1];
+        forms.push({
+          html: `${a} · ${b}`,
+          className: "small wider"
+        });
+      }
+
+      for (let base = 2; base <= 5; base++) {
+        for (let exp = 2; exp <= 4; exp++) {
+          if (base ** exp === value) {
+            forms.push({
+              html: `${base}<sup>${exp}</sup>`,
+              className: value >= 16 ? "small" : "big"
+            });
+          }
+        }
+      }
+
+      const den = randInt(2, 6);
+      const num = value * den;
+      forms.push({
+        html: makeFraction(num, den),
+        className: "tiny"
+      });
+
+      if (value <= 12) {
+        const a = value * randInt(2, 5);
+        const b = a / value;
+        forms.push({
+          html: `${a} ÷ ${b}`,
+          className: "small wider"
+        });
+      }
+
+      return forms[randInt(0, forms.length - 1)];
+    }
+
+    function allowedFoodValue() {
+      const maxCandidate = Math.max(8, state.playerValue + 14);
+      let value = randInt(1, maxCandidate);
+      if (Math.random() < 0.33) {
+        value = Math.max(1, state.playerValue - randInt(1, Math.min(4, state.playerValue - 1 || 1)));
+      }
+      return Math.max(1, value);
+    }
+
+    function createHunter() {
+      const pos = randomFreeSpot();
+      const extra = randInt(2, 9);
+      state.hunter = {
+        x: pos.x,
+        y: pos.y,
+        value: state.playerValue + extra,
+        html: `${state.playerValue + extra}`,
+        className: state.playerValue + extra >= 100 ? "small" : "big"
+      };
+    }
+
+    function refreshHunterValue() {
+      if (!state.hunter) return;
+      const extra = randInt(2, 9);
+      state.hunter.value = state.playerValue + extra;
+      state.hunter.html = `${state.hunter.value}`;
+      state.hunter.className = state.hunter.value >= 100 ? "small" : "big";
+    }
+
+    function moveHunter() {
+      if (state.dead || !state.hunter) return;
+
+      refreshHunterValue();
+
+      const options = [];
+      const dx = state.player.x - state.hunter.x;
+      const dy = state.player.y - state.hunter.y;
+
+      if (dx !== 0) options.push({ x: state.hunter.x + Math.sign(dx), y: state.hunter.y });
+      if (dy !== 0) options.push({ x: state.hunter.x, y: state.hunter.y + Math.sign(dy) });
+
+      options.push(
+        { x: state.hunter.x + 1, y: state.hunter.y },
+        { x: state.hunter.x - 1, y: state.hunter.y },
+        { x: state.hunter.x, y: state.hunter.y + 1 },
+        { x: state.hunter.x, y: state.hunter.y - 1 }
+      );
+
+      let moved = false;
+      for (const option of options) {
+        if (outOfBounds(option.x, option.y)) continue;
+        if (collidesWithBlocked(option.x, option.y)) continue;
+
+        const clashFood = state.foods.some(f => Math.abs(f.x - option.x) < 0.8 && Math.abs(f.y - option.y) < 0.8);
+        if (clashFood) continue;
+
+        state.hunter.x = option.x;
+        state.hunter.y = option.y;
+        moved = true;
+        break;
+      }
+
+      if (!moved) {
+        const pos = randomFreeSpot();
+        state.hunter.x = pos.x;
+        state.hunter.y = pos.y;
+      }
+
+      render();
+      checkCollisions();
+    }
+
+    function createFood() {
+      if (state.foods.length >= MAX_FOODS || state.dead) return;
+      const pos = randomFreeSpot();
+      const value = allowedFoodValue();
+      const appearance = makeLabelForValue(value);
+      const food = {
+        id: crypto.randomUUID(),
+        x: pos.x,
+        y: pos.y,
+        value,
+        html: appearance.html,
+        className: appearance.className || ""
+      };
+      state.foods.push(food);
+      render();
+    }
+
+    function renderEntity(entity, type) {
+      const div = document.createElement("div");
+      div.className = `entity ${type} ${entity.className || ""}`;
+      div.style.left = `${entity.x * CELL}px`;
+      div.style.top = `${entity.y * CELL}px`;
+
+      const ring = document.createElement("div");
+      ring.className = "ring";
+
+      const label = document.createElement("div");
+      label.className = "label";
+      label.innerHTML = entity.html ?? String(entity.value);
+
+      div.appendChild(ring);
+      div.appendChild(label);
+      return div;
+    }
+
+    function render() {
+      playfield.innerHTML = "";
+      const playerEntity = {
+        x: state.player.x,
+        y: state.player.y,
+        html: `${state.playerValue}`,
+        className: state.playerValue >= 100 ? "small" : "big"
+      };
+      playfield.appendChild(renderEntity(playerEntity, "player"));
+      for (const food of state.foods) {
+        playfield.appendChild(renderEntity(food, "food"));
+      }
+      if (state.hunter) {
+        playfield.appendChild(renderEntity(state.hunter, "hunter"));
+      }
+      scoreEl.textContent = state.score;
+      sizeEl.textContent = state.playerValue;
+    }
+
+    function gameOver() {
+      state.dead = true;
+      clearInterval(state.spawnTimer);
+      clearInterval(state.hunterTimer);
+      gameOverEl.classList.add("show");
+    }
+
+    function eat(foodIndex) {
+      const food = state.foods[foodIndex];
+      state.score += food.value;
+      state.playerValue += food.value;
+      state.foods.splice(foodIndex, 1);
+      createFood();
+      render();
+    }
+
+    function checkCollisions() {
+      for (let i = state.foods.length - 1; i >= 0; i--) {
+        const food = state.foods[i];
+        const closeEnough = Math.abs(food.x - state.player.x) < 0.8 && Math.abs(food.y - state.player.y) < 0.8;
+        if (closeEnough) {
+          if (food.value < state.playerValue) {
+            eat(i);
+          } else {
+            gameOver();
+            return;
+          }
+        }
+      }
+
+      if (state.hunter) {
+        const hunterHit = Math.abs(state.hunter.x - state.player.x) < 0.8 && Math.abs(state.hunter.y - state.player.y) < 0.8;
+        if (hunterHit) {
+          gameOver();
+          return;
+        }
+      }
+    }
+
+    function tryMove(dx, dy) {
+      if (state.dead) return;
+      const nextX = state.player.x + dx;
+      const nextY = state.player.y + dy;
+      if (outOfBounds(nextX, nextY)) return;
+      if (collidesWithBlocked(nextX, nextY)) return;
+      state.player.x = nextX;
+      state.player.y = nextY;
+      render();
+      checkCollisions();
+    }
+
+    function seedFoods() {
+      while (state.foods.length < MAX_FOODS) createFood();
+    }
+
+    function startSpawning() {
+      clearInterval(state.spawnTimer);
+      state.spawnTimer = setInterval(() => {
+        if (state.dead) return;
+        if (state.foods.length < MAX_FOODS) createFood();
+      }, 1200);
+
+      clearInterval(state.hunterTimer);
+      state.hunterTimer = setInterval(() => {
+        moveHunter();
+      }, 700);
+    }
+
+    function resetGame() {
+      state.score = 0;
+      state.playerValue = 5;
+      state.player = { x: 13, y: 21 };
+      state.foods = [];
+      state.dead = false;
+      state.hunter = null;
+      gameOverEl.classList.remove("show");
+      seedFoods();
+      createHunter();
+      startSpawning();
+      render();
+    }
+
+    document.addEventListener("keydown", (e) => {
+      const key = e.key;
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(key)) {
+        e.preventDefault();
+      }
+      if (key === "ArrowUp") tryMove(0, -1);
+      else if (key === "ArrowDown") tryMove(0, 1);
+      else if (key === "ArrowLeft") tryMove(-1, 0);
+      else if (key === "ArrowRight") tryMove(1, 0);
+    });
+
+    function moveFromDirection(direction) {
+      if (direction === "up") tryMove(0, -1);
+      else if (direction === "down") tryMove(0, 1);
+      else if (direction === "left") tryMove(-1, 0);
+      else if (direction === "right") tryMove(1, 0);
+    }
+
+    const touchButtons = document.querySelectorAll(".touch-btn");
+
+    touchButtons.forEach((btn) => {
+      let holdInterval = null;
+
+      const startMove = (e) => {
+        e.preventDefault();
+        const direction = btn.dataset.move;
+        moveFromDirection(direction);
+        clearInterval(holdInterval);
+        holdInterval = setInterval(() => moveFromDirection(direction), 140);
+      };
+
+      const stopMove = () => {
+        clearInterval(holdInterval);
+        holdInterval = null;
+      };
+
+      btn.addEventListener("touchstart", startMove, { passive: false });
+      btn.addEventListener("touchend", stopMove);
+      btn.addEventListener("touchcancel", stopMove);
+
+      btn.addEventListener("mousedown", startMove);
+      btn.addEventListener("mouseup", stopMove);
+      btn.addEventListener("mouseleave", stopMove);
+    });
+
+    restartBtn.addEventListener("click", resetGame);
+
+    resetGame();
+  </script>
+</body>
+</html>
