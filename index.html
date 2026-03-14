@@ -112,7 +112,6 @@
     .level2 { background: #d9eb85; }
     .level3 { background: #f1a39d; }
     .level4 { background: #d48be9; }
-    .level5 { background: #efe4d6; }
 
     .flower {
       position: absolute;
@@ -139,6 +138,7 @@
       height: 210px;
       object-fit: cover;
       z-index: 1;
+      display: none;
     }
 
     .clock-link {
@@ -172,7 +172,63 @@
       border-radius: 50%;
     }
 
-    /* Helt usynlig knapp i nederste venstre rute */
+    .next-link {
+      position: absolute;
+      right: 58px;
+      top: 645px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 28px;
+      border: 3px solid #111;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.65);
+      color: #111;
+      font-size: 2rem;
+      line-height: 1;
+      text-decoration: none;
+      z-index: 3;
+      transform: rotate(-2deg);
+      transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .next-link:hover {
+      transform: rotate(-2deg) scale(1.05);
+      opacity: 0.96;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+    }
+
+    .next-link:focus-visible {
+      outline: 2px dashed #111;
+      outline-offset: 4px;
+    }
+
+    .page-number {
+      position: absolute;
+      left: 50%;
+      top: 760px;
+      transform: translateX(-50%);
+      font-size: 2rem;
+      color: #111;
+      z-index: 2;
+    }
+
+    .secret-portrait-button {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 120px;
+      height: 120px;
+      background: transparent;
+      z-index: 10;
+      cursor: pointer;
+    }
+
+    .secret-portrait-button:focus-visible {
+      outline: 2px dashed #111;
+      outline-offset: -4px;
+    }
+
     .secret-mattemani {
       position: absolute;
       left: calc(var(--cell) * 1);
@@ -232,9 +288,8 @@
       }
 
       .portrait {
-        position: static;
-        display: block;
-        margin: 20px auto 10px;
+        left: 20px;
+        top: 220px;
         width: 150px;
         height: 170px;
       }
@@ -251,11 +306,33 @@
         width: 76px;
         height: 76px;
       }
+
+      .next-link {
+        position: static;
+        display: table;
+        margin: 26px auto 14px;
+        font-size: 1.5rem;
+      }
+
+      .page-number {
+        position: static;
+        transform: none;
+        text-align: center;
+        margin-top: 16px;
+        font-size: 1.5rem;
+      }
+
+      .secret-portrait-button {
+        width: 90px;
+        height: 90px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="page">
+    <div class="secret-portrait-button" onclick="visPortrett()" aria-label="Vis hemmelig portrett" tabindex="0"></div>
+
     <div class="top-line"></div>
 
     <svg class="flower flower-left" viewBox="0 0 100 100" aria-hidden="true">
@@ -280,10 +357,8 @@
       <circle cx="46" cy="42" r="6" fill="#f2f0c6"></circle>
     </svg>
 
-    <!-- Bytt filnavn under til bildet ditt -->
-    <img class="portrait" src="gammel-mann.png" alt="Portrett" />
+    <img class="portrait" id="secretPortrait" src="gammel-mann.png" alt="Portrett" />
 
-    <!-- Klokkeknapp -->
     <a class="clock-link" href="hva-er-klokka.html" aria-label="Åpne klokkeøving">
       <svg viewBox="0 0 100 100" aria-hidden="true">
         <circle cx="50" cy="50" r="39" fill="none" stroke="#111" stroke-width="4"></circle>
@@ -293,6 +368,8 @@
       </svg>
     </a>
 
+    <a class="next-link" href="side2.html" aria-label="Neste side">Neste →</a>
+
     <div class="menu">
       <div id="mainTitle" class="ruteord title-pill"></div>
       <div id="subTitle" class="subtitle"></div>
@@ -301,8 +378,9 @@
       <a class="ruteord level-btn level2" href="nivaa2.html" id="btn2"></a>
       <a class="ruteord level-btn level3" href="nivaa3.html" id="btn3"></a>
       <a class="ruteord level-btn level4" href="regnerekkefolge.html" id="btn4"></a>
-      <a class="ruteord level-btn level5" href="algebra.html" id="btn5"></a>
     </div>
+
+    <div class="page-number">Side 1</div>
 
     <a class="secret-mattemani" href="mattemani.html" aria-label="Åpne Mattemani"></a>
   </div>
@@ -323,13 +401,23 @@
       document.getElementById(id).textContent = tekst;
     }
 
+    function visPortrett() {
+      document.getElementById("secretPortrait").style.display = "block";
+    }
+
+    document.querySelector(".secret-portrait-button").addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        visPortrett();
+      }
+    });
+
     settRuteord("mainTitle", "Helt Nils lekser");
     settVanligTekst("subTitle", "De 4 regneartene");
     settRuteord("btn1", "1 Nivå 1");
     settRuteord("btn2", "2 Nivå 2");
     settRuteord("btn3", "3 Nivå 3");
     settRuteord("btn4", "Regnerekkefølge");
-    settRuteord("btn5", "Algebra");
   </script>
 </body>
 </html>
