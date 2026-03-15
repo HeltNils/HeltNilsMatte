@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Klassekart 10C</title>
+  <style>
+    :root{
+      --paper:#e6f0f2;
+      --desk:#a9a9a9;
+      --desk-border:#f3f3f3;
+      --name-bg:#c77af1;
+      --ink:#222;
+      --yellow:#fff200;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:"Comic Sans MS","Trebuchet MS",sans-serif;
+      background:#d9d9dd;
+      display:flex;
+      justify-content:center;
+      padding:18px;
+      color:var(--ink);
+    }
+
+    .page{
+      position:relative;
+      width:1180px;
+      min-height:1560px;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,.34), transparent 28%),
+        radial-gradient(circle at 70% 60%, rgba(255,255,255,.24), transparent 24%),
+        linear-gradient(#e4eef0,#e4eef0);
+      overflow:hidden;
+      border-radius:4px;
+      box-shadow:0 8px 24px rgba(0,0,0,.08);
+      padding:32px 34px 26px;
+    }
+
+    h1{
+      margin:0 0 18px 24px;
+      font-size:3rem;
+      font-weight:700;
+      letter-spacing:.3px;
+    }
+
+    .room{
+      position:relative;
+      height:1410px;
+    }
+
+    .desk{
+      position:absolute;
+      width:170px;
+      height:124px;
+      background:var(--desk);
+      border:4px solid var(--desk-border);
+      border-radius:2px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:1.02rem;
+      text-align:center;
+      padding:8px;
+      transition:background .18s ease, transform .15s ease;
+    }
+
+    .desk.valid-drop{
+      background:#8f8f8f;
+      transform:scale(1.02);
+    }
+
+    .name-bank{
+      position:absolute;
+      left:24px;
+      top:845px;
+      width:560px;
+      min-height:430px;
+      display:grid;
+      grid-template-columns:repeat(3, minmax(120px, 1fr));
+      gap:16px 18px;
+      align-content:start;
+    }
+
+    .student{
+      position:relative;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:4px 14px 7px;
+      min-height:34px;
+      background:var(--name-bg);
+      color:#111;
+      border-radius:18px;
+      font-size:1.25rem;
+      line-height:1;
+      cursor:grab;
+      user-select:none;
+      touch-action:none;
+      box-shadow:0 2px 0 rgba(0,0,0,.08);
+      width:max-content;
+      max-width:150px;
+      margin:auto;
+      text-align:center;
+    }
+
+    .student.dragging{
+      opacity:.88;
+      cursor:grabbing;
+      z-index:1000;
+      box-shadow:0 8px 18px rgba(0,0,0,.18);
+    }
+
+    .placed{
+      width:auto;
+      max-width:150px;
+      margin:0;
+    }
+
+    .divider{
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:164px;
+      border-top:4px solid #222;
+    }
+
+    .teacher-zone{
+      position:absolute;
+      right:44px;
+      bottom:62px;
+      width:380px;
+      height:74px;
+      background:var(--yellow);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .new-btn{
+      width:100%;
+      height:100%;
+      border:none;
+      background:transparent;
+      font:inherit;
+      font-size:2rem;
+      cursor:pointer;
+      transition:transform .16s ease, box-shadow .16s ease;
+    }
+
+    .new-btn:hover{
+      transform:scale(1.03);
+    }
+
+    .note{
+      position:absolute;
+      left:34px;
+      bottom:72px;
+      font-size:1rem;
+      color:#555;
+    }
+
+    @media (max-width: 900px){
+      body{ padding:0; }
+
+      .page{
+        width:100%;
+        min-height:100vh;
+        padding:18px;
+      }
+
+      h1{
+        font-size:2rem;
+        margin-left:8px;
+      }
+
+      .room{
+        height:1720px;
+      }
+
+      .desk{
+        width:112px;
+        height:84px;
+        font-size:.72rem;
+        padding:6px;
+      }
+
+      .name-bank{
+        left:14px;
+        top:1020px;
+        width:calc(100% - 28px);
+        grid-template-columns:repeat(2, minmax(110px, 1fr));
+      }
+
+      .student{
+        font-size:1rem;
+        max-width:120px;
+      }
+
+      .teacher-zone{
+        left:50%;
+        transform:translateX(-50%);
+        width:260px;
+        height:62px;
+      }
+
+      .new-btn{
+        font-size:1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Klassekart 10C</h1>
+
+    <div class="room" id="room">
+      <!-- rad 1: bakerst -->
+      <div class="desk" data-seat="1"  style="left:   8px; top:  26px;"></div>
+      <div class="desk" data-seat="2"  style="left: 178px; top:  26px;"></div>
+      <div class="desk" data-seat="3"  style="left: 348px; top:  26px;"></div>
+
+      <div class="desk" data-seat="4"  style="left: 690px; top:  26px;"></div>
+      <div class="desk" data-seat="5"  style="left: 860px; top:  26px;"></div>
+      <div class="desk" data-seat="6"  style="left:1030px; top:  26px;"></div>
+
+      <!-- rad 2 -->
+      <div class="desk" data-seat="7"  style="left:   8px; top: 282px;"></div>
+      <div class="desk" data-seat="8"  style="left: 178px; top: 282px;"></div>
+      <div class="desk" data-seat="9"  style="left: 348px; top: 282px;"></div>
+
+      <div class="desk" data-seat="10" style="left: 690px; top: 282px;"></div>
+      <div class="desk" data-seat="11" style="left: 860px; top: 282px;"></div>
+      <div class="desk" data-seat="12" style="left:1030px; top: 282px;"></div>
+
+      <!-- rad 3 -->
+      <div class="desk" data-seat="13" style="left:   8px; top: 540px;"></div>
+      <div class="desk" data-seat="14" style="left: 178px; top: 540px;"></div>
+      <div class="desk" data-seat="15" style="left: 348px; top: 540px;"></div>
+
+      <div class="desk" data-seat="16" style="left: 690px; top: 540px;"></div>
+      <div class="desk" data-seat="17" style="left: 860px; top: 540px;"></div>
+      <div class="desk" data-seat="18" style="left:1030px; top: 540px;"></div>
+
+      <!-- rad 4 -->
+      <div class="desk" data-seat="19" style="left: 690px; top: 870px;"></div>
+      <div class="desk" data-seat="20" style="left: 860px; top: 870px;"></div>
+      <div class="desk" data-seat="21" style="left:1030px; top: 870px;"></div>
+
+      <!-- rad 5: fremst ved kateter -->
+      <div class="desk" data-seat="22" style="left: 690px; top:1140px;"></div>
+      <div class="desk" data-seat="23" style="left: 860px; top:1140px;"></div>
+      <div class="desk" data-seat="24" style="left:1030px; top:1140px;"></div>
+
+      <div class="name-bank" id="nameBank"></div>
+
+      <div class="divider"></div>
+
+      <div class="teacher-zone">
+        <button class="new-btn" id="newBtn">Nye plasser</button>
+      </div>
+
+      <div class="note">Dra navnene til en pult, eller trykk «Nye plasser».</div>
+    </div>
+  </div>
+
+  <script>
+    const students = [
+      "Linus","Sigurd","Heine","Jarle","Benjamin S","Noah N","Andreas","Elina","Eduard","Daniel",
+      "Margrete","Thormar","Alina","Thea","Simen","Mari","William","Storm",
+      "Oscar","Benjamin E","Kristian","Noah J"
+    ];
+
+    // Fronten av rommet er nederst ved kateteret.
+    const biases = {
+      Oscar: [1,2,3,4,5,6,7,8,9,10,11,12],
+      Thea: [15,16,19,22],
+      William: [15,16,19,22]
+    };
+
+    const preferredTheaWilliamSeats = [15,16,19,22];
+    const allSeatIds = Array.from({length:24}, (_, i) => i + 1);
+
+    const adjacentSeats = {
+      1:[2], 2:[1,3], 3:[2],
+      4:[5], 5:[4,6], 6:[5],
+      7:[8], 8:[7,9], 9:[8],
+      10:[11], 11:[10,12], 12:[11],
+      13:[14], 14:[13,15], 15:[14],
+      16:[17], 17:[16,18], 18:[17],
+      19:[20], 20:[19,21], 21:[20],
+      22:[23], 23:[22,24], 24:[23]
+    };
+
+    const williamCannotSitNextTo = ["Oscar", "Andreas", "Thea", "Benjamin E"];
+
+    const nameBank = document.getElementById("nameBank");
+    const desks = Array.from(document.querySelectorAll(".desk"));
+    const newBtn = document.getElementById("newBtn");
+
+    let dragged = null;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    function makeStudentChip(name){
+      const div = document.createElement("div");
+      div.className = "student";
+      div.textContent = name;
+      div.dataset.name = name;
+      addDrag(div);
+      return div;
+    }
+
+    function resetNameBank(){
+      nameBank.innerHTML = "";
+      students.forEach(name => nameBank.appendChild(makeStudentChip(name)));
+
+      desks.forEach(d => {
+        d.innerHTML = "";
+        d.dataset.occupied = "";
+      });
+    }
+
+    function allowedSeatsFor(name){
+      if (biases[name]) return biases[name].slice();
+      return allSeatIds.slice();
+    }
+
+    function weightedAllowedSeatsFor(name, freeSeats){
+      const allowed = allowedSeatsFor(name).filter(s => freeSeats.includes(s));
+
+      if ((name === "Thea" || name === "William") && allowed.length) {
+        const preferred = allowed.filter(s => preferredTheaWilliamSeats.includes(s));
+        if (preferred.length) {
+          return preferred.concat(allowed.filter(s => !preferred.includes(s)));
+        }
+      }
+
+      return allowed;
+    }
+
+    function randomItem(arr){
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function shuffle(arr){
+      return arr.map(v => [Math.random(), v]).sort((a,b) => a[0] - b[0]).map(x => x[1]);
+    }
+
+    function isSeatValidForStudent(name, seat, placement){
+      if (name === "William") {
+        const neighbors = adjacentSeats[seat] || [];
+        for (const blockedName of williamCannotSitNextTo) {
+          const blockedSeat = placement[blockedName];
+          if (blockedSeat && neighbors.includes(blockedSeat)) {
+            return false;
+          }
+        }
+      }
+
+      if (williamCannotSitNextTo.includes(name)) {
+        const williamSeat = placement["William"];
+        if (williamSeat) {
+          const neighbors = adjacentSeats[seat] || [];
+          if (neighbors.includes(williamSeat)) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    }
+
+    function generatePlacements(){
+      for (let attempt = 0; attempt < 900; attempt++) {
+        const freeSeats = allSeatIds.slice();
+        const placement = {};
+
+        const orderedStudents = shuffle(students.slice()).sort((a,b) => {
+          const aPriority = a === "William" ? -1 : 0;
+          const bPriority = b === "William" ? -1 : 0;
+          if (aPriority !== bPriority) return aPriority - bPriority;
+          return allowedSeatsFor(a).length - allowedSeatsFor(b).length;
+        });
+
+        let ok = true;
+
+        for (const name of orderedStudents) {
+          let allowed = weightedAllowedSeatsFor(name, freeSeats).filter(seat =>
+            isSeatValidForStudent(name, seat, placement)
+          );
+
+          if (!allowed.length) {
+            ok = false;
+            break;
+          }
+
+          let seat;
+
+          if (name === "Thea" || name === "William") {
+            const preferred = allowed.filter(s => preferredTheaWilliamSeats.includes(s));
+            if (preferred.length && Math.random() < 0.9) {
+              seat = randomItem(preferred);
+            } else {
+              seat = randomItem(allowed);
+            }
+          } else {
+            seat = randomItem(allowed);
+          }
+
+          placement[name] = seat;
+          freeSeats.splice(freeSeats.indexOf(seat), 1);
+        }
+
+        if (ok) return placement;
+      }
+
+      return null;
+    }
+
+    function placeStudentAtDesk(chip, desk){
+      desk.innerHTML = "";
+      desk.appendChild(chip);
+      desk.dataset.occupied = chip.dataset.name;
+
+      chip.classList.add("placed");
+      chip.style.position = "relative";
+      chip.style.left = "auto";
+      chip.style.top = "auto";
+      chip.style.transform = "none";
+    }
+
+    function renderRandomPlacements(){
+      resetNameBank();
+      const placement = generatePlacements();
+      if (!placement) return;
+
+      Object.entries(placement).forEach(([name, seatId]) => {
+        const chip = [...document.querySelectorAll(".student")].find(el => el.dataset.name === name);
+        const desk = desks.find(d => Number(d.dataset.seat) === Number(seatId));
+        if (chip && desk) placeStudentAtDesk(chip, desk);
+      });
+    }
+
+    function clearDeskIfContains(chip){
+      desks.forEach(d => {
+        if (d.contains(chip)) {
+          d.innerHTML = "";
+          d.dataset.occupied = "";
+        }
+      });
+    }
+
+    function addDrag(el){
+      el.addEventListener("pointerdown", e => {
+        dragged = el;
+        offsetX = e.clientX - el.getBoundingClientRect().left;
+        offsetY = e.clientY - el.getBoundingClientRect().top;
+        el.classList.add("dragging");
+
+        clearDeskIfContains(el);
+
+        document.body.appendChild(el);
+        el.style.position = "fixed";
+        el.style.left = `${e.clientX - offsetX}px`;
+        el.style.top = `${e.clientY - offsetY}px`;
+      });
+    }
+
+    function deskUnderPointer(x, y){
+      return desks.find(d => {
+        const r = d.getBoundingClientRect();
+        return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+      });
+    }
+
+    window.addEventListener("pointermove", e => {
+      if (!dragged) return;
+
+      dragged.style.left = `${e.clientX - offsetX}px`;
+      dragged.style.top = `${e.clientY - offsetY}px`;
+
+      desks.forEach(d => d.classList.remove("valid-drop"));
+      const desk = deskUnderPointer(e.clientX, e.clientY);
+      if (desk) desk.classList.add("valid-drop");
+    });
+
+    window.addEventListener("pointerup", e => {
+      if (!dragged) return;
+
+      desks.forEach(d => d.classList.remove("valid-drop"));
+
+      const desk = deskUnderPointer(e.clientX, e.clientY);
+      const name = dragged.dataset.name;
+      const seatId = desk ? Number(desk.dataset.seat) : null;
+      const allowed = allowedSeatsFor(name);
+
+      if (desk && !desk.dataset.occupied && allowed.includes(seatId)) {
+        if (isSeatValidForStudent(name, seatId, currentPlacementMapAfterManualDrop(name, seatId))) {
+          placeStudentAtDesk(dragged, desk);
+        } else {
+          nameBank.appendChild(dragged);
+          dragged.classList.remove("placed");
+          dragged.style.position = "relative";
+          dragged.style.left = "auto";
+          dragged.style.top = "auto";
+          dragged.style.transform = "none";
+        }
+      } else {
+        nameBank.appendChild(dragged);
+        dragged.classList.remove("placed");
+        dragged.style.position = "relative";
+        dragged.style.left = "auto";
+        dragged.style.top = "auto";
+        dragged.style.transform = "none";
+      }
+
+      dragged.classList.remove("dragging");
+      dragged = null;
+    });
+
+    function currentPlacementMapAfterManualDrop(dropName, dropSeat){
+      const placement = {};
+      desks.forEach(d => {
+        const name = d.dataset.occupied;
+        const seat = Number(d.dataset.seat);
+        if (name) placement[name] = seat;
+      });
+      placement[dropName] = dropSeat;
+      return placement;
+    }
+
+    newBtn.addEventListener("click", renderRandomPlacements);
+
+    resetNameBank();
+  </script>
+</body>
+</html>
